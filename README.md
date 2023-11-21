@@ -1,2 +1,11 @@
-# Socket-Programming
-Create sockets to demonstrate FTP protocol between client and server.
+Name - email:
+  Mike Thai - miket126@csu.fullerton.edu
+  
+
+  
+
+How to run:
+
+
+Note:
+
