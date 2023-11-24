@@ -90,17 +90,24 @@ while True:
 	if not tempSize:
 		break
 
-	
+	if tempSize[-5:] == b"<END>":
+		tempSize = str()
+		print("File upload successfully\n")
+		break
 
 	print(tempSize)
+ 
+	
 	fileSize += int(tempSize.decode())
 	
 	
 	# Get the file data
 	fileData += (recvAll(clientSock, int(tempSize.decode()))).decode()
 
-	
- 
+
+
+
+
 print("The file size is ", fileSize, "bytes")
 	
 #print("The file data is: ", fileData)

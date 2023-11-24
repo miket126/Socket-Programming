@@ -86,10 +86,10 @@ while True:
 		break
 
 
+# Give token when file is fully transferred
+connSock.send(b"<END>")
 
-
-
-print ("Sent ", numTotal, " bytes.")
+print ("Sent ", numTotal+5, " bytes.")
 
 
 
