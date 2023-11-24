@@ -30,17 +30,17 @@ welcomeSock.listen()
 def recvAll(sock, numBytes):
 
 	# The buffer
-	recvBuff = str()
+	recvBuff = str().encode()
 	
 	# The temporary buffer
 	tmpBuff = str()
 	
  
 	# Keep receiving till all is received
-	while len(recvBuff) < len(numBytes):
+	while len(recvBuff) < numBytes:
 		
 		# Attempt to receive bytes
-		tmpBuff = sock.recv(int(numBytes)).decode()
+		tmpBuff = sock.recv(numBytes)
 		# The other side has closed the socket
 		if not tmpBuff:
 			break
@@ -71,22 +71,20 @@ while True:
 	# The size of the incoming file
 	fileSize = str()	
 	
-	# The buffer containing the file size
-	fileSizeBuff = str()
+
 	
 	# Receive the first 10 bytes indicating the
 	# size of the file
-	header = str("0000000010")
-	fileSize = recvAll(clientSock, header)
+	
+	fileSize = recvAll(clientSock, 10)
 	print(fileSize)
 		
-	# Get the file size
-	#fileSize = fileSizeBuff
+
 	
-	print("The file size is ", int(fileSize))
+	print("The file size is ", int(fileSize.decode()), "bytes")
 	
 	# Get the file data
-	fileData = recvAll(clientSock, fileSize)
+	fileData = recvAll(clientSock, int(fileSize.decode()))
 	
 	print("The file data is: ")
 	
@@ -94,11 +92,11 @@ while True:
 	#print(filename)
 	#file = open(filename, "wb")
 	#file.write(fileData)
-	#print(fileData)
-	break
+	print(fileData.decode())
+	# Close our side
+	clientSock.close()
 
 
-# Close our side
-clientSock.close()
+
 welcomeSock.close()
  
