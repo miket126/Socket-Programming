@@ -34,10 +34,11 @@ connSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # Connect to the server
 connSock.connect((serverAddr, serverPort))
 
+nameSize = str(len(fileName))
+while len(nameSize) < 10:
+	nameSize = "0" + nameSize
 
-while len(fileName) < 40:
-	fileName = "0" + fileName
-
+connSock.send(nameSize.encode())
 connSock.send(fileName.encode())
 print(fileName)
 

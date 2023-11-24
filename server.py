@@ -58,16 +58,18 @@ clientSock, addr = welcomeSock.accept()
 print("Accepted connection from client: ", addr)
 print("\n")
 
-filename = clientSock.recv(40).decode()
+nameSize = recvAll(clientSock, 10)
+filename = recvAll(clientSock, int(nameSize.decode())).decode()
 print(filename)
 fileSize = 0
+fileData = str()
 
 # Accept connections forever
 while True:
 	
 	# The buffer to all data received from the
 	# the client.
-	fileData = str()
+	
 	
 	# The temporary buffer to store the received
 	# data.
@@ -88,6 +90,8 @@ while True:
 	if not tempSize:
 		break
 
+	
+
 	print(tempSize)
 	fileSize += int(tempSize.decode())
 	
@@ -99,10 +103,10 @@ while True:
  
 print("The file size is ", fileSize, "bytes")
 	
-#print("The file data is: ", fileData.decode())
+#print("The file data is: ", fileData)
  
-file = open(filename, "w")
-file.write(fileData)
+file = open(filename, "wb")
+file.write(fileData.encode())
 file.close()
 
 # Close our side
