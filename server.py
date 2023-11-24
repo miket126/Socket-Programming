@@ -48,17 +48,22 @@ def recvAll(sock, numBytes):
 		recvBuff += tmpBuff
 	
 	return recvBuff
-		
+
+
+print("Waiting for connections...")
+	
+# Accept connections
+clientSock, addr = welcomeSock.accept()
+
+print("Accepted connection from client: ", addr)
+print("\n")
+
+filename = clientSock.recv(40).decode()
+print(filename)
+fileSize = 0
+
 # Accept connections forever
 while True:
-	
-	print("Waiting for connections...")
-		
-	# Accept connections
-	clientSock, addr = welcomeSock.accept()
-	
-	print("Accepted connection from client: ", addr)
-	print("\n")
 	
 	# The buffer to all data received from the
 	# the client.
@@ -66,37 +71,41 @@ while True:
 	
 	# The temporary buffer to store the received
 	# data.
-	recvBuff = str()
+	#recvBuff = str()
 	
 	# The size of the incoming file
-	fileSize = str()	
+	tempSize = str()
 	
-
-	
+ 
 	# Receive the first 10 bytes indicating the
 	# size of the file
 	
-	fileSize = recvAll(clientSock, 10)
-	print(fileSize)
-		
-
+	tempSize = recvAll(clientSock, 10)
 	
-	print("The file size is ", int(fileSize.decode()), "bytes")
+	
+ 
+	# If other side close conn
+	if not tempSize:
+		break
+
+	print(tempSize)
+	fileSize += int(tempSize.decode())
+	
 	
 	# Get the file data
-	fileData = recvAll(clientSock, int(fileSize.decode()))
+	fileData += (recvAll(clientSock, int(tempSize.decode()))).decode()
+
 	
-	print("The file data is: ")
+ 
+print("The file size is ", fileSize, "bytes")
 	
-	#filename = clientSock.recv(1024).decode()
-	#print(filename)
-	#file = open(filename, "wb")
-	#file.write(fileData)
-	print(fileData.decode())
-	# Close our side
-	clientSock.close()
+#print("The file data is: ", fileData.decode())
+ 
+file = open(filename, "w")
+file.write(fileData)
+file.close()
 
-
-
+# Close our side
+clientSock.close()
 welcomeSock.close()
  

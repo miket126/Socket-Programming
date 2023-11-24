@@ -35,6 +35,14 @@ connSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 connSock.connect((serverAddr, serverPort))
 
 
+while len(fileName) < 40:
+	fileName = "0" + fileName
+
+connSock.send(fileName.encode())
+print(fileName)
+
+
+
 # The number of bytes sent
 numSent = 0
 numTotal = 0
@@ -77,9 +85,13 @@ while True:
 		break
 
 
+
+
+
 print ("Sent ", numTotal, " bytes.")
 
-connSock.send(fileName.encode())
+
+
 	
 # Close the socket and the file
 connSock.close()
