@@ -3,7 +3,7 @@ import socket
 from .config import END_TOKEN
 
 
-def sendData(sock: socket.socket, data: bytes):
+def sendData(sock: socket.socket, data: bytes) -> int:
     # Make the size into a string
     sizeStr = str(len(data))
 
@@ -25,7 +25,24 @@ def sendData(sock: socket.socket, data: bytes):
     return numSent
 
 
-def sendFile(sock: socket.socket, fileName: str):
+def sendCmd(sock: socket.socket, cmd: str, arg: str | None):
+    # Construct the data
+    dataToSend = str(cmd)
+
+    # Pad the start of cmd with 0
+    while len(dataToSend) < 4:
+        dataToSend = "0" + dataToSend
+
+    # Append arg to the
+    if arg:
+        dataToSend += " "
+        dataToSend += arg
+
+    # Send the data
+    sendData(sock, dataToSend.encode())
+
+
+def sendFile(sock: socket.socket, fileName: str) -> int:
     # Send the file name
     sendData(sock, fileName.encode())
     print("File name sent: ", fileName)

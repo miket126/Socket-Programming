@@ -10,7 +10,7 @@ import sys
 
 from socket_utils.config import COMMANDS
 from socket_utils.receive import recvData
-from socket_utils.send import sendData, sendFile
+from socket_utils.send import sendCmd, sendFile
 
 # # Command line checks
 # if len(sys.argv) < 2:
@@ -34,16 +34,41 @@ connSock.connect((serverAddr, serverPort))
 
 while True:
     # Get the user input
-    cmd = input("ftp> ").lower()
+    _input = input("ftp> ").lower().split(" ")
 
-    # Validate user input
-    if cmd not in COMMANDS:
-        print("Invalid command\n")
+    # Initialize command and arg
+    cmd = ""
+    arg = None
+
+    # Validate input
+    if len(_input) < 1 or len(_input) > 2:
+        print("Invalid input\n")
         continue
 
-    # Send user input
-    sendData(connSock, cmd.encode())
-    print("Command sent to server")
+    # Assign the command
+    cmd = _input[0]
+
+    # If argument is provided, assign it to a variable
+    if len(_input) > 1:
+        arg = _input[1]
+
+    # Validate cmd
+    if cmd not in COMMANDS:
+        print("Invalid command")
+        print("Valid commands:")
+        print("\tls")
+        print("\tget <file name>")
+        print("\tput <file name>")
+        print("\tquit")
+        continue
+
+    # Send the command
+    sendCmd(connSock, cmd, arg)
+    print("Command sent to server:", cmd, arg)
+
+    # If command is quit, exit
+    if cmd == "quit":
+        break
 
     # Receive server response
     resData = recvData(connSock)

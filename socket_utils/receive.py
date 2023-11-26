@@ -10,7 +10,7 @@ from .config import END_TOKEN
 # @param numBytes - the number of bytes to receive
 # @return - the bytes received
 # *************************************************
-def recvAll(sock: socket.socket, numBytes: int):
+def recvAll(sock: socket.socket, numBytes: int) -> bytes:
     # The buffer
     recvBuff = str().encode()
 
@@ -30,7 +30,7 @@ def recvAll(sock: socket.socket, numBytes: int):
     return recvBuff
 
 
-def recvData(sock: socket.socket):
+def recvData(sock: socket.socket) -> tuple[bytes, int]:
     # Receive the size data
     dataSize = recvAll(sock, 10)
 
@@ -47,13 +47,32 @@ def recvData(sock: socket.socket):
     return data, dataSize
 
 
-def recvFile(sock: socket.socket):
+def recvCmd(sock: socket.socket) -> tuple[str, str | None]:
+    # Receive the command
+    cmdData = recvData(sock)
+    cmdList = cmdData[0].decode().split(" ")
+
+    # Extract the cmd from cmdStr
+    cmd = cmdList[0]
+
+    # Removed the padded 0 from cmd
+    while cmd.startswith("0"):
+        cmd = cmd[1:]
+
+    # Extract the arg from cmdStr
+    arg = None
+
+    if len(cmdList) > 1:
+        arg = cmdList[1]
+
+    return cmd, arg
+
+
+def recvFile(sock: socket.socket) -> tuple[str, bytes, int]:
     # Receive the file name
     fileNameData = recvData(sock)
 
     filename = fileNameData[0].decode()
-
-    print("File name received:", filename)
 
     fileSize = 0
     fileData = str()
@@ -73,7 +92,4 @@ def recvFile(sock: socket.socket):
         # Append the received chunk
         fileData += chunkData[0].decode()
 
-    print("File received")
-    print("File is", fileSize, "bytes")
-
-    return filename, fileData
+    return filename, fileData, fileSize

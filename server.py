@@ -7,7 +7,7 @@
 import os
 import socket
 
-from socket_utils.receive import recvData, recvFile
+from socket_utils.receive import recvCmd, recvData, recvFile
 from socket_utils.send import sendData
 
 # The port on which to listen
@@ -33,13 +33,19 @@ print("\n")
 
 # Control Channel
 while True:
-    # Receive the command
-    cmdData = recvData(clientSock)
-    cmd = cmdData[0].decode()
-    print("Command received:", cmd)
+    # Receive the command and argument
+    cmd, arg = recvCmd(clientSock)
+    print("Command received:", cmd, arg)
+
+    # If command is quit, exit
+    if cmd == "quit":
+        break
 
     # Handle commands
-    sendData(clientSock, cmd.encode())
+    # Temporary
+    sendData(
+        clientSock, "".join([cmd, " " if arg else "", arg if arg else ""]).encode()
+    )
     print("Sent command back to client")
 
     # Temporary
@@ -47,7 +53,11 @@ while True:
 
 
 # # Receive file and write file
-# filename, fileData = recvFile(clientSock)
+# filename, fileData, fileSize = recvFile(clientSock)
+# print("File received")
+# print("File is", fileSize, "bytes")
+
+
 # file_path = os.path.join("server_files", filename)
 # file = open(file_path, "wb")
 # file.write(fileData.encode())
