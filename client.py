@@ -1,25 +1,23 @@
-
 # *******************************************************************
 # This file illustrates how to send a file using an
 # application-level protocol where the first 10 bytes
 # of the message from client to server contain the file
 # size and the rest contain the file data.
 # *******************************************************************
-import socket
 import os
+import socket
 import sys
 
-# Command line checks 
-if len(sys.argv) < 2:
-	print ("USAGE python " + sys.argv[0] + " <FILE NAME>" )
+from socket_utils.config import COMMANDS
+from socket_utils.receive import recvData
+from socket_utils.send import sendData, sendFile
 
-# The name of the file
-fileName = sys.argv[1]
+# # Command line checks
+# if len(sys.argv) < 2:
+#     print("USAGE python " + sys.argv[0] + " <FILE NAME>")
 
-
-# Open the file
-fileObj = open(fileName, "rb")
-#fileObj = open("file.txt", "rb")
+# # The name of the file
+# fileName = sys.argv[1]
 
 
 # Server address
@@ -34,69 +32,31 @@ connSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # Connect to the server
 connSock.connect((serverAddr, serverPort))
 
-nameSize = str(len(fileName))
-while len(nameSize) < 10:
-	nameSize = "0" + nameSize
-
-connSock.send(nameSize.encode())
-connSock.send(fileName.encode())
-print(fileName)
-
-
-
-# The number of bytes sent
-numSent = 0
-numTotal = 0
-
-# The file data
-fileData = None
-
-i = 0
-# Keep sending until all is sent
 while True:
-    
-    # Make sure to read 65536 bytes everytime from file
-	fileData = fileObj.read(65536)
-	# Make sure we did not hit EOF
-	if fileData:
-			
-		# Get the size of the data read
-		# and convert it to string
-		dataSizeStr = str(len(fileData))
-		
-		# Prepend 0's to the size string
-		# until the size is 10 bytes
-		while len(dataSizeStr) < 10:
-			dataSizeStr = "0" + dataSizeStr
-	
-		# Prepend the size of the data to the
-		# file data.
-		fileData = dataSizeStr.encode() + fileData	
-		
-		# The number of bytes sent
-		numSent = 0
-		
-		# Send the data!
-		while len(fileData) > numSent:
-			numSent += connSock.send(fileData[numSent:])
-			numTotal += numSent
-	
-	# The file has been read. We are done
-	else:
-		break
+    # Get the user input
+    cmd = input("ftp> ").lower()
+
+    # Validate user input
+    if cmd not in COMMANDS:
+        print("Invalid command\n")
+        continue
+
+    # Send user input
+    sendData(connSock, cmd.encode())
+    print("Command sent to server")
+
+    # Receive server response
+    resData = recvData(connSock)
+    res = resData[0].decode()
+    print("Response received:", res)
+
+    # Temporary
+    break
 
 
-# Give token when file is fully transferred
-connSock.send(b"<END>")
+# # Send the file
+# fileBytesSent = sendFile(connSock, fileName)
+# print("File sent", fileBytesSent, "bytes")
 
-print ("Sent ", numTotal+5, " bytes.")
-
-
-
-	
-# Close the socket and the file
+# Close the socket
 connSock.close()
-fileObj.close()
-	
-
-
