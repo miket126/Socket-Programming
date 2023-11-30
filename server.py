@@ -243,7 +243,7 @@ while True:
     print("Sent command back to client")
 
     # Temporary
-    break
+    #break
 
 
 # # Receive file and write file
