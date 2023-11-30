@@ -5,9 +5,8 @@ Name - email:
 Language: Python  
 
 How to run:
-  Start server.py
-  Start client.py with command 'python client.py <filename.txt>'
-
+  1st. Start server.py with command 'server.py <PORT_NUMBER>'
+  2nd. Start client.py with command 'python client.py <SERVER_NAME> <PORT_NUMBER>'  
 
 Note:
-
+  When testing on your own machine, replace <SERVER_NAME> with 'localhost'
