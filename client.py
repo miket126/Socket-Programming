@@ -255,12 +255,39 @@ while True:
         print("\tquit")
         continue
 
+    
     # Send the command
     sendCmd(connSock, cmd, arg)
-    print("Command sent to server:", cmd, arg)
+    if arg:
+        print("Command sent to server:", cmd, arg)
+    else:
+        print("Command sent to server:", cmd)
+        
 
+
+
+
+
+
+
+
+
+
+    
+    # ls command
+    
+        
+    
+    
+    
+     
+     
+        
+    
+    
     # If command is quit, exit
     if cmd == "quit":
+        print("Connection closed successfully\n")
         break
 
     # Receive server response

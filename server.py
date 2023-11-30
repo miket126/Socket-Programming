@@ -93,6 +93,7 @@ def recvData(sock: socket.socket) -> tuple[bytes, int]:
 def recvCmd(sock: socket.socket) -> tuple[str, str | None]:
     # Receive the command
     cmdData = recvData(sock)
+    
     cmdList = cmdData[0].decode().split(" ")
 
     # Extract the cmd from cmdStr
@@ -227,13 +228,43 @@ def sendFile(sock: socket.socket, fileName: str) -> int:
 
 # Control Channel
 while True:
+
     # Receive the command and argument
     cmd, arg = recvCmd(clientSock)
-    print("Command received:", cmd, arg)
-
+    if arg:
+        print("Command received:", cmd, arg)
+    else:
+        print("Command received:", cmd)
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    # ls command
+    if cmd == "ls":
+        file = open('directory.txt', 'w')
+        path = os.getcwd()
+        for filename in os.listdir("./server"):
+            file.write(filename)
+            file.write("\n")
+        file.close()
+        
+        
+        
+        
+        
+        
+    
+    
     # If command is quit, exit
     if cmd == "quit":
+        print("Connection closed successfully\n")
         break
+    
 
     # Handle commands
     # Temporary
