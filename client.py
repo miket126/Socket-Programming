@@ -8,19 +8,21 @@ import os
 import socket
 import sys
 
-# # Command line checks
-# if len(sys.argv) < 2:
-#     print("USAGE python " + sys.argv[0] + " <FILE NAME>")
+# Command line checks
+if len(sys.argv) < 2:
+     print("USAGE python " + sys.argv[0] + "<SERVER_NAME>" + "<PORT NUMBER>")
 
-# # The name of the file
-# fileName = sys.argv[1]
+# The name of the file
+#fileName = sys.argv[1]
 
 
 # Server address
-serverAddr = "localhost"
+#serverAddr = "localhost"
+serverAddr = sys.argv[1]
 
 # Server port
-serverPort = 1234
+#serverPort = 1234
+serverPort = int(sys.argv[2])
 
 # Create a TCP socket
 connSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -267,7 +269,7 @@ while True:
     print("Response received:", res)
 
     # Temporary
-    break
+    #break
 
 
 # # Send the file
