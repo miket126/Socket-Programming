@@ -22,10 +22,10 @@ def validateCmd(input: list[str]) -> tuple[str | None, str | None, bool]:
     if cmd not in COMMANDS:
         print("Invalid command")
         print("Valid commands:")
-        print("\tls")
-        print("\tget <file name>")
-        print("\tput <file name>")
-        print("\tquit\n")
+        print("\t'ls' to list file in server")
+        print("\t'get <file name>' to download file")
+        print("\t'put <file name>' to upload file")
+        print("\t'quit' to exit\n")
         return None, None, False
 
     # Validate argument
@@ -33,10 +33,10 @@ def validateCmd(input: list[str]) -> tuple[str | None, str | None, bool]:
         if len(input) != 2:
             print("Invalid command")
             print("Valid commands:")
-            print("\tls")
-            print("\tget <file name>")
-            print("\tput <file name>")
-            print("\tquit\n")
+            print("\t'ls' to list file in server")
+            print("\t'get <file name>' to download file")
+            print("\t'put <file name>' to upload file")
+            print("\t'quit' to exit\n")
             return None, None, False
 
     return cmd, arg, True
