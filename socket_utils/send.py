@@ -2,9 +2,31 @@ import os
 import socket
 
 
+class FileBytesSent:
+    def __init__(
+        self,
+        file_bytes_sent: int,
+        file_header_bytes_sent: int,
+        file_name_bytes_sent: int,
+        file_name_header_bytes_sent: int,
+    ):
+        self.file_bytes_sent = file_bytes_sent
+        self.file_header_bytes_sent = file_header_bytes_sent
+        self.file_name_bytes_sent = file_name_bytes_sent
+        self.file_name_header_bytes_sent = file_name_header_bytes_sent
+
+        self.total_file_bytes_sent = self.file_bytes_sent + self.file_header_bytes_sent
+        self.total_file_name_bytes_sent = (
+            self.file_name_bytes_sent + self.file_name_header_bytes_sent
+        )
+        self.total_bytes_sent = (
+            self.total_file_bytes_sent + self.total_file_name_bytes_sent
+        )
+
+
 def sendData(
     sock: socket.socket, data: bytes, isFinished: bool = True, isError: bool = False
-) -> int:
+) -> tuple[int, int]:
     # Make the size into a string
     size_str = str(len(data))
 
@@ -18,18 +40,21 @@ def sendData(
     # Calculate error byte
     error_byte = ("1" if isError else "0").encode()
 
+    # Calculate the header length
+    header_bytes = len(finished_byte) + len(error_byte) + len(size_str)
+
     # Prepend the size of the data to the
     # file data.
     data_to_send = finished_byte + error_byte + size_str.encode() + data
 
     # The number of bytes sent
-    num_sent = 0
+    data_bytes_sent = 0
 
     # Start sending untill all data is sent
-    while len(data_to_send) > num_sent:
-        num_sent += sock.send(data_to_send[num_sent:])
+    while len(data_to_send) > data_bytes_sent:
+        data_bytes_sent += sock.send(data_to_send[data_bytes_sent:])
 
-    return num_sent
+    return len(data), header_bytes
 
 
 def sendCmd(sock: socket.socket, cmd: str, arg: str | None):
@@ -53,7 +78,7 @@ def sendError(sock: socket.socket, msg: str):
     return sendData(sock, msg.encode(), True, True)
 
 
-def sendFile(sock: socket.socket, file_path: str) -> int:
+def sendFile(sock: socket.socket, file_path: str) -> FileBytesSent:
     # Get the file name from path
     file_name, file_extension = os.path.splitext(os.path.basename(file_path))
     file_name = file_name + file_extension
@@ -62,10 +87,13 @@ def sendFile(sock: socket.socket, file_path: str) -> int:
     file = open(file_path, "rb")
 
     # Send the file name
-    sendData(sock, file_name.encode())
+    file_name_bytes_sent, file_name_header_bytes_sent = sendData(
+        sock, file_name.encode()
+    )
 
     # The number of bytes sent
     file_bytes_sent = 0
+    file_header_bytes_sent = 0
 
     # The file data
     file_data = None
@@ -77,8 +105,11 @@ def sendFile(sock: socket.socket, file_path: str) -> int:
         # Make sure we did not hit EOF
         if file_data:
             # Send the chunk
+            _file_bytes_sent, _header_bytes_sent = sendData(sock, file_data, False)
+
             # Add the bytes sent to the total bytes sent
-            file_bytes_sent += sendData(sock, file_data, False)
+            file_bytes_sent += _file_bytes_sent
+            file_header_bytes_sent += _header_bytes_sent
 
         # The file has been read. We are done
         else:
@@ -91,4 +122,9 @@ def sendFile(sock: socket.socket, file_path: str) -> int:
     # Close the file
     file.close()
 
-    return file_bytes_sent
+    return FileBytesSent(
+        file_bytes_sent,
+        file_header_bytes_sent,
+        file_name_bytes_sent,
+        file_name_header_bytes_sent,
+    )

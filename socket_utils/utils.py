@@ -1,3 +1,5 @@
+import os
+
 from .config import COMMANDS
 
 
@@ -29,7 +31,7 @@ def validateCmd(input: list[str]) -> tuple[str | None, str | None, bool]:
         return None, None, False
 
     # Validate argument
-    if cmd == "get" or cmd == "cmd":
+    if cmd == "get" or cmd == "put":
         if len(input) != 2:
             print("Invalid command")
             print("Valid commands:")
@@ -40,3 +42,27 @@ def validateCmd(input: list[str]) -> tuple[str | None, str | None, bool]:
             return None, None, False
 
     return cmd, arg, True
+
+
+# Check if directory exists
+# If not, create one
+def validateDir(path: str):
+    # Check if directory exists and is a directory
+    if not os.path.isdir(path):
+        # If not, create one
+        os.mkdir(path)
+
+
+def filesInDir(path: str) -> str:
+    # Get the current working directory
+    current_directory = os.getcwd()
+
+    # List all files and directories in the current working directory
+    files_and_directories = os.listdir(os.path.join(current_directory, path))
+
+    # Generate the string containing the file names
+    fileStr = "\n  Files on server:\n"
+    for item in files_and_directories:
+        fileStr += "  - " + item + "\n"
+
+    return fileStr

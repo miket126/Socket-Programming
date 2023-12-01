@@ -8,7 +8,7 @@ from socket_utils.socketUtil import (
     handleRecvFile,
     handleSendFile,
 )
-from socket_utils.utils import validateCmd
+from socket_utils.utils import validateCmd, validateDir
 
 # Command line checks
 if len(sys.argv) < 3:
@@ -26,6 +26,9 @@ client_sock = createClientSocket(hostname, server_port)
 
 # Define directory for files
 file_dir = "client_files"
+
+# If file directory doesn't exist, create one
+validateDir(file_dir)
 
 # Output command usage
 print("\nUsage")
@@ -60,16 +63,16 @@ while True:
     if cmd == "get" or cmd == "put":
         # Create a data server sock
         data_sock, data_sock_port = createServerSocket()
-        print("Data socket created")
-        print("Data socket listening on " + str(data_sock_port) + "...")
+        print(" ", "Data socket created")
+        print(" ", "Data socket listening on " + str(data_sock_port) + "...")
 
         # Send the port number to the server
         sendData(client_sock, str(data_sock_port).encode())
 
         # Accept connections
         client_data_sock, addr = data_sock.accept()
-        print("Accepted connection from client: ", addr, "\n")
-        print("File transfer started")
+        print(" ", "Accepted connection from client: ", addr, "\n")
+        print(" ", "File transfer started")
 
         # If GET command
         if cmd == "get":
@@ -86,7 +89,7 @@ while True:
         # Close sockets
         data_sock.close()
         client_data_sock.close()
-        print("Data socket closed\n")
+        print(" ", "Data socket closed\n")
 
 
 # Close the socket

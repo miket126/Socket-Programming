@@ -9,6 +9,7 @@ from socket_utils.socketUtil import (
     handleRecvFile,
     handleSendFile,
 )
+from socket_utils.utils import filesInDir, validateDir
 
 # Command line checks
 if len(sys.argv) < 2:
@@ -27,37 +28,37 @@ print("Waiting for connections on port " + str(port) + "...")
 # Accept connections
 client_sock, addr = server_sock.accept()
 print("Accepted connection from client: ", addr, "\n")
+print("Waiting for next command...\n")
 
 # Define directory for files
 file_dir = "server_files"
 
+# If file directory doesn't exist, create one
+validateDir(file_dir)
+
 
 # Control Channel
 while True:
+    # Command status
+    status = "SUCCESS"
+
     # Receive the command and argument
     cmd, arg = recvCmd(client_sock)
-    print("Command received:", cmd, arg, "\n")
+    print(f"{addr} - ", cmd, arg, "\n")
 
     # Handle QUIT command
     if cmd == "quit":
-        sendData(client_sock, "\nClosing connection".encode())
+        sendData(client_sock, "\n  Closing connection\n".encode())
+        print(" ", f"[{cmd.upper()}]", status, "\n")
         break
 
     # Handle LS command
     if cmd == "ls":
-        # Get the current working directory
-        current_directory = os.getcwd()
-
-        # List all files and directories in the current working directory
-        files_and_directories = os.listdir(os.path.join(current_directory, file_dir))
-
-        # Generate the string containing the file names
-        fileStr = "\nFiles on server:\n"
-        for item in files_and_directories:
-            fileStr += "- " + item + "\n"
+        # Get the files in the files directory
+        file_str = filesInDir(file_dir)
 
         # Send the data back
-        sendData(client_sock, fileStr.encode())
+        sendData(client_sock, file_str.encode())
 
     # Handle GET or PUT command
     if cmd == "get" or cmd == "put":
@@ -70,26 +71,31 @@ while True:
 
         # Create socket and connect to data channel
         client_data_sock = createClientSocket("localhost", data_sock_port)
-        print("Connected to data socket on port", data_sock_port, "\n")
-        print("File transfer started")
+        print(" ", "Connected to data socket on port", data_sock_port, "\n")
+        print(" ", "File transfer started")
 
         # If get command
         if cmd == "get":
             # Try to send the file
-            handleSendFile(file_dir, arg, client_data_sock)
+            error = handleSendFile(file_dir, arg, client_data_sock)
+
+            status = "FAILURE" if error else status
 
         # If put command
         if cmd == "put":
             # Receive the file
             res = recvFile(client_data_sock)
             # Handle error and write to disk
-            handleRecvFile(res, file_dir)
+            error = handleRecvFile(res, file_dir)
+
+            status = "FAILURE" if error else status
 
         # Close the socket
         client_data_sock.close()
-        print("Data socket closed\n")
-        
-    print("Waiting for next command...")
+        print(" ", "Data socket closed\n")
+
+    print(" ", f"[{cmd.upper()}]", status, "\n")
+    print("Waiting for next command...\n")
 
 
 # Close our side
