@@ -21,7 +21,7 @@ python client.py <host name> <port number>
 
 #### Note: <br />
 
-- When testing on your own machine, replace <host_name> with 'localhost' <br />
+- When testing on your own machine, replace `<host_name>` with `localhost` <br />
 - Files to be transferred should be in the proper directories
   - `server_files` for the server
   - `client_files` for the client
