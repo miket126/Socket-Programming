@@ -88,6 +88,8 @@ while True:
         # Close the socket
         client_data_sock.close()
         print("Data socket closed\n")
+        
+    print("Waiting for next command...")
 
 
 # Close our side

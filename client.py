@@ -27,6 +27,12 @@ client_sock = createClientSocket(hostname, server_port)
 # Define directory for files
 file_dir = "client_files"
 
+# Output command usage
+print("\nUsage")
+print("'ls' to list file in server")
+print("'get <file name>' to download file")
+print("'put <file name>' to upload file")
+print("'quit' to exit\n")
 
 while True:
     # Get the user input
