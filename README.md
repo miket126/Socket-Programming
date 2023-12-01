@@ -1,13 +1,11 @@
 Name - email:
-  Mike Thai - miket126@csu.fullerton.edu
-  
+Mike Thai - miket126@csu.fullerton.edu
 
-Language: Python  
+Language: Python
 
 How to run:
-  Start server.py
-  Start client.py with command 'python client.py <filename.txt>'
 
-
-Note:
-
+```bash
+python server.py <port number>
+python client.py <host name> <port number>
+```

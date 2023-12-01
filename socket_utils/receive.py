@@ -1,6 +1,20 @@
 import socket
 
-from .config import END_TOKEN
+
+class Response:
+    def __init__(self, data: bytes, data_size: int, finished: bool, error: bool):
+        self.data = data.decode()
+        self.size = data_size
+        self.finished = finished
+        self.error = error
+
+
+class FileResponse(Response):
+    def __init__(
+        self, data: bytes, data_size: int, finished: bool, error: bool, file_name: str
+    ):
+        super().__init__(data, data_size, finished, error)
+        self.file_name = file_name
 
 
 # ************************************************
@@ -30,30 +44,40 @@ def recvAll(sock: socket.socket, numBytes: int) -> bytes:
     return recvBuff
 
 
-def recvData(sock: socket.socket) -> tuple[bytes, int]:
+def recvData(sock: socket.socket) -> Response:
+    # Receive the finished byte
+    finished_byte = recvAll(sock, 1)
+
+    # Receive the error byte
+    error_byte = recvAll(sock, 1)
+
     # Receive the size data
-    dataSize = recvAll(sock, 10)
+    data_size = recvAll(sock, 10)
 
     # Client closed connection
-    if not dataSize:
+    if not data_size:
         return None
 
-    # Decode data size
-    dataSize = int(dataSize.decode())
+    # Decode header fields
+    data_size = int(data_size.decode())
+    finished = True if finished_byte.decode() == "1" else False
+    error = True if error_byte.decode() == "1" else False
 
     # Receive the data
-    data = recvAll(sock, dataSize)
+    data = recvAll(sock, data_size)
 
-    return data, dataSize
+    # return data, data_size, finished, error
+    return Response(data, data_size, finished, error)
 
 
 def recvCmd(sock: socket.socket) -> tuple[str, str | None]:
     # Receive the command
-    cmdData = recvData(sock)
-    cmdList = cmdData[0].decode().split(" ")
+    res = recvData(sock)
+
+    cmd_str = res.data.split(" ")
 
     # Extract the cmd from cmdStr
-    cmd = cmdList[0]
+    cmd = cmd_str[0]
 
     # Removed the padded 0 from cmd
     while cmd.startswith("0"):
@@ -62,34 +86,39 @@ def recvCmd(sock: socket.socket) -> tuple[str, str | None]:
     # Extract the arg from cmdStr
     arg = None
 
-    if len(cmdList) > 1:
-        arg = cmdList[1]
+    if len(cmd_str) > 1:
+        arg = cmd_str[1]
 
     return cmd, arg
 
 
-def recvFile(sock: socket.socket) -> tuple[str, bytes, int]:
+def recvFile(sock: socket.socket) -> Response | FileResponse:
     # Receive the file name
-    fileNameData = recvData(sock)
+    file_name_res = recvData(sock)
 
-    filename = fileNameData[0].decode()
+    # If error, return message and error flag
+    if file_name_res.error:
+        return file_name_res
 
-    fileSize = 0
-    fileData = str()
+    # Get the file name
+    filename = file_name_res.data
+
+    file_size = 0
+    file_data = str()
 
     # Accept connections forever
     while True:
         # Receive a chunk
-        chunkData = recvData(sock)
+        chunk_res = recvData(sock)
 
         # If client closed connection or received end token, exit
-        if not chunkData or chunkData[0] == END_TOKEN:
+        if not chunk_res.data or chunk_res.finished:
             break
 
         # Add the file size
-        fileSize += chunkData[1]
+        file_size += chunk_res.size
 
         # Append the received chunk
-        fileData += chunkData[0].decode()
+        file_data += chunk_res.data
 
-    return filename, fileData, fileSize
+    return FileResponse(file_data.encode(), file_size, True, False, filename)

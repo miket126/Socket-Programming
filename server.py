@@ -1,68 +1,96 @@
-# *****************************************************
-# This file implements a server for receiving the file
-# sent using sendfile(). The server receives a file and
-# prints it's contents.
-# *****************************************************
-
 import os
-import socket
+import sys
 
 from socket_utils.receive import recvCmd, recvData, recvFile
 from socket_utils.send import sendData
+from socket_utils.socketUtil import (
+    createClientSocket,
+    createServerSocket,
+    handleRecvFile,
+    handleSendFile,
+)
 
-# The port on which to listen
-listenPort = 1234
+# Command line checks
+if len(sys.argv) < 2:
+    print("USAGE python " + sys.argv[0] + " <PORT NUMBER>\n")
+    exit()
 
-# Create a welcome socket.
-welcomeSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Bind the socket to the port
-welcomeSock.bind(("localhost", listenPort))
-
-# Start listening on the socket
-welcomeSock.listen()
+# The port of the server
+port = int(sys.argv[1])
 
 
-print("Waiting for connections...")
+# Create the server socket.
+server_sock, _ = createServerSocket(port)
+print("Waiting for connections on port " + str(port) + "...")
+
 
 # Accept connections
-clientSock, addr = welcomeSock.accept()
+client_sock, addr = server_sock.accept()
+print("Accepted connection from client: ", addr, "\n")
 
-print("Accepted connection from client: ", addr)
-print("\n")
+# Define directory for files
+file_dir = "server_files"
+
 
 # Control Channel
 while True:
     # Receive the command and argument
-    cmd, arg = recvCmd(clientSock)
-    print("Command received:", cmd, arg)
+    cmd, arg = recvCmd(client_sock)
+    print("Command received:", cmd, arg, "\n")
 
-    # If command is quit, exit
+    # Handle QUIT command
     if cmd == "quit":
+        sendData(client_sock, "\nClosing connection".encode())
         break
 
-    # Handle commands
-    # Temporary
-    sendData(
-        clientSock, "".join([cmd, " " if arg else "", arg if arg else ""]).encode()
-    )
-    print("Sent command back to client")
+    # Handle LS command
+    if cmd == "ls":
+        # Get the current working directory
+        current_directory = os.getcwd()
 
-    # Temporary
-    break
+        # List all files and directories in the current working directory
+        files_and_directories = os.listdir(os.path.join(current_directory, file_dir))
 
+        # Generate the string containing the file names
+        fileStr = "\nFiles on server:\n"
+        for item in files_and_directories:
+            fileStr += "- " + item + "\n"
 
-# # Receive file and write file
-# filename, fileData, fileSize = recvFile(clientSock)
-# print("File received")
-# print("File is", fileSize, "bytes")
+        # Send the data back
+        sendData(client_sock, fileStr.encode())
 
+    # Handle GET or PUT command
+    if cmd == "get" or cmd == "put":
+        # Send acknowledgement
+        sendData(client_sock, "".encode())
 
-# file_path = os.path.join("server_files", filename)
-# file = open(file_path, "wb")
-# file.write(fileData.encode())
-# file.close()
+        # Receive the port number from client
+        port_res = recvData(client_sock)
+        data_sock_port = int(port_res.data)
+
+        # Create socket and connect to data channel
+        client_data_sock = createClientSocket("localhost", data_sock_port)
+        print("Connected to data socket on port", data_sock_port, "\n")
+        print("File transfer started")
+
+        # If get command
+        if cmd == "get":
+            # Try to send the file
+            handleSendFile(file_dir, arg, client_data_sock)
+
+        # If put command
+        if cmd == "put":
+            # Receive the file
+            res = recvFile(client_data_sock)
+            # Handle error and write to disk
+            handleRecvFile(res, file_dir)
+
+        # Close the socket
+        client_data_sock.close()
+        print("Data socket closed\n")
+
 
 # Close our side
-clientSock.close()
-welcomeSock.close()
+client_sock.close()
+server_sock.close()
+print("Control socket closed")
