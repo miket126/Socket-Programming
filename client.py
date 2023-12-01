@@ -227,6 +227,11 @@ def sendFile(sock: socket.socket, fileName: str) -> int:
 # Control Channel
 while True:
     # Get the user input
+    print("\nUsage")
+    print("'put <filename>' to upload file")
+    print("'get <filename>' to download file")
+    print("'ls' to list file in server")
+    print("'quit' to exit\n")
     _input = input("ftp> ").lower().split(" ")
 
     # Initialize command and arg
@@ -275,13 +280,36 @@ while True:
 
     
     # ls command
-    
+    if cmd == "ls":
+        # Create a socket
+        tempSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        # Bind the socket to port 0
+        tempSocket.bind(('',0))
+
+        # Retreive the ephemeral port number
+        ephemeralPort = str(tempSocket.getsockname()[1])
         
-    
-    
-    
-     
-     
+        # Send eph port number using control channel
+        numSent = sendData(connSock, ephemeralPort.encode())
+        
+        
+        tempSocket.listen()
+        
+        print("Waiting for connections...")
+        
+        # Start data channel
+        dataSock, addr = tempSocket.accept()
+        print("Accepted connection from server: ", addr)
+        print("\n")
+        
+        fileName, fileData, fileSize = recvFile(dataSock)
+        print('File in the server directory')
+        print(fileData)
+        
+        
+        dataSock.close()
+        tempSocket.close()
         
     
     

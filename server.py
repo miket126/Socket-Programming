@@ -253,7 +253,15 @@ while True:
             file.write("\n")
         file.close()
         
+        ephemeralPort, portSize = recvData(clientSock)
+        ephemeralPort = int(ephemeralPort.decode())
+        dataSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
+        # Same addr as control socket
+        dataSock.connect((addr[0], ephemeralPort))
+        numSent = sendFile(dataSock, "directory.txt")
+        
+        dataSock.close()
         
         
         
@@ -271,7 +279,7 @@ while True:
     sendData(
         clientSock, "".join([cmd, " " if arg else "", arg if arg else ""]).encode()
     )
-    print("Sent command back to client")
+    print("\nWaiting for next commands...")
 
     # Temporary
     #break
