@@ -40,7 +40,7 @@ def handleSendFile(file_dir: str, file_name: str, sock: socket.socket) -> bool:
 
         # Print file info
         print(" ", "File transfer completed")
-        print(" ", "File bytes transferred:")
+        print(" ", "File bytes sent:")
         print(" ", "  - File name:", file_name)
         print(
             " ", "  - File name header bytes:", bytes_sent.file_name_header_bytes_sent
@@ -69,9 +69,9 @@ def handleRecvFile(
     else:
         # Print file info
         print(" ", "File transfer completed")
-        print(" ", "File Data:")
+        print(" ", "File Data received:")
         print(" ", "  - File name:", res.file_name)
-        print(" ", "  - File size:", res.size)
+        print(" ", "  - File size:", res.size, " bytes")
 
         # Receive file and write file
         file_path = os.path.join(file_dir, res.file_name)
