@@ -4,6 +4,7 @@ Mike Thai - miket126@csu.fullerton.edu <br />
 David Vu - daviddvu@csu.fullerton.edu <br />
 Peining Lo - plo8@csu.fullerton.edu <br />
 Jia Wei Ng - jiawei.ng@csu.fullerton.edu <br />
+Angel Calderon - angelcalderon105@csu.fullerton.edu <br />
 
 <br />
 
