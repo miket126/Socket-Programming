@@ -12,6 +12,9 @@ Python <br /><br />
 
 ### How to run:
 
+- Open 2 command prompt windows
+- Change directory to where server.py and client.py are located
+- Run each of the following script on separate command prompt window
 ```bash
 python server.py <port number>
 python client.py <host name> <port number>
